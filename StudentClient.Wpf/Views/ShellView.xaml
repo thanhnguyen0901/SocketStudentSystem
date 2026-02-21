@@ -1,0 +1,89 @@
+<Window x:Class="StudentClient.Wpf.Views.ShellView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Height="320" Width="520">
+    <!--
+        Caliburn.Micro locates this view by convention:
+          ViewModel = StudentClient.Wpf.ViewModels.ShellViewModel
+          View      = StudentClient.Wpf.Views.ShellView   (replaces "ViewModels" with "Views",
+                                                            strips "Model" suffix)
+
+        All bindings below use x:Name to activate Caliburn's auto-binding convention:
+          - TextBox  x:Name="Host"    → bound two-way to ShellViewModel.Host
+          - TextBox  x:Name="Port"    → bound two-way to ShellViewModel.Port
+          - Button   x:Name="Connect" → calls ShellViewModel.Connect(),
+                                        IsEnabled driven by ShellViewModel.CanConnect
+          - TextBlock x:Name="Status" → bound one-way to ShellViewModel.Status
+    -->
+
+    <Border Padding="20">
+        <StackPanel>
+
+            <!-- ── Page title ───────────────────────────────────────────── -->
+            <TextBlock Text="Socket Student System"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,16" />
+
+            <!-- ── Connection section ─────────────────────────────────── -->
+            <GroupBox Header="Connection">
+                <Grid Margin="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />  <!-- Host row -->
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="Auto" />  <!-- Port row -->
+                        <RowDefinition Height="14" />
+                        <RowDefinition Height="Auto" />  <!-- Connect button -->
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />  <!-- Status row -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Host -->
+                    <Label Grid.Row="0" Grid.Column="0"
+                           Content="Host:"
+                           VerticalAlignment="Center" />
+                    <TextBox Grid.Row="0" Grid.Column="1"
+                             x:Name="Host"
+                             VerticalContentAlignment="Center"
+                             Height="26" />
+
+                    <!-- Port -->
+                    <Label Grid.Row="2" Grid.Column="0"
+                           Content="Port:"
+                           VerticalAlignment="Center" />
+                    <TextBox Grid.Row="2" Grid.Column="1"
+                             x:Name="Port"
+                             VerticalContentAlignment="Center"
+                             Height="26" />
+
+                    <!-- Connect button (guard: CanConnect) -->
+                    <Button Grid.Row="4" Grid.Column="1"
+                            x:Name="Connect"
+                            Content="Connect"
+                            HorizontalAlignment="Left"
+                            Padding="24,4" />
+
+                    <!-- Status -->
+                    <Label Grid.Row="6" Grid.Column="0"
+                           Content="Status:"
+                           VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="6" Grid.Column="1"
+                               x:Name="Status"
+                               VerticalAlignment="Center"
+                               Foreground="DimGray"
+                               FontStyle="Italic" />
+                </Grid>
+            </GroupBox>
+
+        </StackPanel>
+    </Border>
+</Window>

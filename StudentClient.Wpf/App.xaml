@@ -1,0 +1,16 @@
+﻿<Application x:Class="StudentClient.Wpf.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:StudentClient.Wpf">
+    <!--
+        No StartupUri here.
+        Caliburn.Micro's BootstrapperBase intercepts WPF startup
+        and shows the root view automatically via OnStartup.
+    -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Instantiating the bootstrapper triggers Caliburn initialization. -->
+            <local:Bootstrapper x:Key="Bootstrapper" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
