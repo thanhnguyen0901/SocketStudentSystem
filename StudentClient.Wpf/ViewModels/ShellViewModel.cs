@@ -1,90 +1,37 @@
 using Caliburn.Micro;
+using StudentClient.Wpf.Services;
 
 namespace StudentClient.Wpf.ViewModels;
 
-/// <summary>
-/// Root view-model for the application shell.
-/// Implements <see cref="Screen"/> so Caliburn manages the window lifecycle
-/// (OnActivate / OnDeactivate / TryCloseAsync).
-/// </summary>
-public class ShellViewModel : Screen
+public sealed class ShellViewModel : Conductor<IScreen>
 {
-    // -------------------------------------------------------------------------
-    // Backing fields
-    // -------------------------------------------------------------------------
+    private readonly TcpStudentService _service;
 
-    private string _host = "127.0.0.1";
-    private string _port = "5000";
-    private string _status = "Disconnected";
+    private ConnectionViewModel? _connectionVm;
+    private DbConnectViewModel? _dbConnectVm;
+    private StudentEntryViewModel? _studentEntryVm;
 
-    // -------------------------------------------------------------------------
-    // Constructor
-    // -------------------------------------------------------------------------
-
-    public ShellViewModel()
+    public ShellViewModel(TcpStudentService service)
     {
-        // DisplayName drives the window title via Caliburn's WindowManager.
+        _service = service;
         DisplayName = "Socket Student System";
     }
 
-    // -------------------------------------------------------------------------
-    // Bindable properties (x:Name convention in ShellView.xaml)
-    // -------------------------------------------------------------------------
-
-    /// <summary>Server hostname or IP address.</summary>
-    public string Host
+    // Caliburn.Micro: CS0672 is expected here; the override runs exactly once before first activation.
+#pragma warning disable CS0672
+    protected override async Task OnInitializeAsync(CancellationToken ct)
+#pragma warning restore CS0672
     {
-        get => _host;
-        set
-        {
-            _host = value;
-            NotifyOfPropertyChange();           // raises PropertyChanged for "Host"
-            NotifyOfPropertyChange(nameof(CanConnect)); // re-evaluate guard
-        }
+        _connectionVm = new ConnectionViewModel(_service, this);
+        _dbConnectVm = new DbConnectViewModel(_service, this);
+        _studentEntryVm = new StudentEntryViewModel(_service);
+
+        await ActivateItemAsync(_connectionVm, ct);
     }
 
-    /// <summary>Server TCP port.</summary>
-    public string Port
-    {
-        get => _port;
-        set
-        {
-            _port = value;
-            NotifyOfPropertyChange();
-            NotifyOfPropertyChange(nameof(CanConnect));
-        }
-    }
+    public Task ShowDbConnectAsync(CancellationToken ct = default)
+        => ActivateItemAsync(_dbConnectVm!, ct);
 
-    /// <summary>Human-readable connection status shown in the UI.</summary>
-    public string Status
-    {
-        get => _status;
-        set
-        {
-            _status = value;
-            NotifyOfPropertyChange();
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // Actions (bound to buttons via x:Name Caliburn convention)
-    // -------------------------------------------------------------------------
-
-    /// <summary>
-    /// Guard method for the Connect action.
-    /// The Connect button is enabled only when both Host and Port are non-empty.
-    /// Caliburn automatically evaluates CanConnect whenever Host or Port change.
-    /// </summary>
-    public bool CanConnect
-        => !string.IsNullOrWhiteSpace(Host) && !string.IsNullOrWhiteSpace(Port);
-
-    /// <summary>
-    /// Placeholder connection handler.
-    /// Real socket logic will be added in a later iteration.
-    /// </summary>
-    public void Connect()
-    {
-        // TODO: inject and call IConnectionService once socket layer is implemented.
-        Status = $"Connecting to {Host}:{Port}…";
-    }
+    public Task ShowStudentEntryAsync(CancellationToken ct = default)
+        => ActivateItemAsync(_studentEntryVm!, ct);
 }
