@@ -1,4 +1,5 @@
 using StudentServer.Console.Crypto;
+using StudentServer.Console.Logging;
 using StudentServer.Console.Networking;
 using System.Net;
 using System.Net.Sockets;
@@ -10,7 +11,7 @@ var desIv = Encoding.ASCII.GetBytes("IV#2026!");
 
 var crypto = new DesCryptoService(desKey, desIv);
 crypto.SelfTest();
-Log("DES self-test passed.");
+Logger.Info("Crypto", "DES self-test passed.");
 
 int port = 9000;
 if (args.Length > 0 && int.TryParse(args[0], out int parsed) && parsed is > 0 and <= 65535)
@@ -20,13 +21,13 @@ using var cts = new CancellationTokenSource();
 System.Console.CancelKeyPress += (_, e) =>
 {
     e.Cancel = true;
-    Log("Shutdown requested - stopping accept loop...");
+    Logger.Info("Server", "Shutdown requested — stopping accept loop.");
     cts.Cancel();
 };
 
 var listener = new TcpListener(IPAddress.Any, port);
 listener.Start();
-Log($"Server listening on port {port}. Press Ctrl+C to stop.");
+Logger.Info("Server", $"Listening on port {port}. Press Ctrl+C to stop.");
 
 var sessions = new List<Task>();
 
@@ -60,13 +61,12 @@ try
 finally
 {
     listener.Stop();
-    Log("Accept loop stopped. Waiting for active sessions to finish...");
+    Logger.Info("Server", "Accept loop stopped. Waiting for active sessions to finish.");
 
     if (sessions.Count > 0)
         await Task.WhenAll(sessions).WaitAsync(TimeSpan.FromSeconds(5));
 
-    Log("Server stopped.");
+    Logger.Info("Server", "Server stopped.");
 }
 
-static void Log(string message)
-    => System.Console.WriteLine($"[{DateTimeOffset.Now:HH:mm:ss.fff}] {message}");
+

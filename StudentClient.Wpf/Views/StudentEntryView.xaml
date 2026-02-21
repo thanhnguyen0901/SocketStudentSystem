@@ -16,6 +16,8 @@
                 <RowDefinition Height="Auto" />
                 <!--  input form  -->
                 <RowDefinition Height="Auto" />
+                <!--  query mode selector (Get All / Get By ID)  -->
+                <RowDefinition Height="Auto" />
                 <!--  buttons + status  -->
                 <RowDefinition Height="*" />
                 <!--  results DataGrid  -->
@@ -111,8 +113,40 @@
                 </Grid>
             </GroupBox>
 
+            <!--  ── Query Mode Selector ──────────────────────────────────  -->
+            <!--  Row 2: choose between Get All and Get By Student ID.       -->
+            <GroupBox
+                Grid.Row="2"
+                Margin="0,0,0,0"
+                Padding="8,6"
+                Header="Query Mode">
+                <StackPanel Orientation="Horizontal">
+                    <!--  RadioButton x:Name triggers Caliburn IsChecked → IsGetAllSelected  -->
+                    <RadioButton
+                        x:Name="IsGetAllSelected"
+                        Margin="0,0,20,0"
+                        VerticalAlignment="Center"
+                        Content="Get All"
+                        IsChecked="{Binding IsGetAllSelected, Mode=TwoWay}" />
+                    <RadioButton
+                        x:Name="IsGetByIdSelected"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        Content="Get By Student ID"
+                        IsChecked="{Binding IsGetByIdSelected, Mode=TwoWay}" />
+                    <!--  Student ID filter input; enabled only when Get By ID is active  -->
+                    <TextBox
+                        x:Name="StudentIdFilter"
+                        Width="140"
+                        Height="26"
+                        VerticalContentAlignment="Center"
+                        IsEnabled="{Binding IsGetByIdSelected}"
+                        ToolTip="Enter Student ID to filter" />
+                </StackPanel>
+            </GroupBox>
+
             <!--  ── Buttons + Status ─────────────────────────────────────  -->
-            <Grid Grid.Row="2" Margin="0,8,0,8">
+            <Grid Grid.Row="3" Margin="0,8,0,8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="10" />
@@ -147,7 +181,7 @@
 
             <!--  ── Results DataGrid ─────────────────────────────────────  -->
             <GroupBox
-                Grid.Row="3"
+                Grid.Row="4"
                 Padding="4"
                 Header="Results">
                 <!--

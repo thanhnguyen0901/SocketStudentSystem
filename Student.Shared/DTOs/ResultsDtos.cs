@@ -15,6 +15,11 @@ public sealed record ResultsGetRequest(
         || (Mode == ResultsMode.ById && !string.IsNullOrWhiteSpace(StudentId));
 }
 
+/// <summary>Returned by the server when a ResultsGet request cannot be fulfilled.</summary>
+public sealed record ResultsGetError(
+    string ErrorCode,
+    string Message);
+
 public sealed record StudentResultDto(
     string FullName,
     string StudentId,

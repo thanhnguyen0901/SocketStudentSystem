@@ -1,5 +1,7 @@
 using Student.Shared.DTOs;
 using Student.Shared.Enums;
+using Student.Shared.Helpers;
+using System.Text.Json;
 
 namespace StudentClient.Wpf.Services;
 
@@ -56,10 +58,21 @@ public sealed class TcpStudentService : IDisposable
         ResultsGetRequest request,
         CancellationToken ct = default)
     {
-        var envelope = await _tcp.RequestAsync<ResultsGetRequest, List<StudentResultDto>?>(
+        // Use JsonElement as payload so we can inspect the response type before
+        // committing to a concrete deserialization target (Results vs ResultsFail).
+        var envelope = await _tcp.RequestAsync<ResultsGetRequest, JsonElement>(
             MessageType.ResultsGet, request, ct);
 
-        return envelope.Payload ?? [];
+        if (envelope.Type == MessageType.ResultsFail)
+        {
+            // Deserialize the error details to surface a user-readable message.
+            var error = envelope.Payload.Deserialize<ResultsGetError>(JsonDefaults.Options);
+            throw new InvalidOperationException(
+                error?.Message ?? "Server rejected the results query.");
+        }
+
+        var rows = envelope.Payload.Deserialize<List<StudentResultDto>>(JsonDefaults.Options);
+        return rows ?? [];
     }
 
     public void Dispose() => _tcp.Dispose();

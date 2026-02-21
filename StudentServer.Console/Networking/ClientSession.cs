@@ -5,6 +5,7 @@ using Student.Shared.Helpers;
 using Student.Shared.Messages;
 using StudentServer.Console.Crypto;
 using StudentServer.Console.Data;
+using StudentServer.Console.Logging;
 using System.Globalization;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -29,7 +30,7 @@ internal sealed class ClientSession
 
     public async Task RunAsync(CancellationToken ct)
     {
-        Log($"Client connected from {_endpoint}.");
+        Logger.Info("Session", "Client connected.", conn: _endpoint);
 
         try
         {
@@ -40,21 +41,21 @@ internal sealed class ClientSession
         }
         catch (IOException)
         {
-            Log($"Client {_endpoint} disconnected.");
+            Logger.Info("Session", "Client disconnected (EOF/reset).", conn: _endpoint);
         }
         catch (OperationCanceledException)
         {
-            Log($"Session with {_endpoint} cancelled (server shutdown).");
+            Logger.Info("Session", "Session cancelled (server shutdown).", conn: _endpoint);
         }
         catch (Exception ex)
         {
-            Log($"[Unhandled] {_endpoint}: {ex}");
+            Logger.Error("Session", "Unhandled exception in session.", conn: _endpoint, ex: ex);
         }
         finally
         {
             _db?.Dispose();
             _client.Close();
-            Log($"Connection to {_endpoint} closed.");
+            Logger.Info("Session", "Connection closed.", conn: _endpoint);
         }
     }
 
@@ -62,7 +63,7 @@ internal sealed class ClientSession
     private async Task HandleNextMessageAsync(NetworkStream stream, CancellationToken ct)
     {
         var raw = await LengthPrefixedJsonProtocol.ReadAsync<RawEnvelope>(stream, ct);
-        Log($"  <- [{_endpoint}] Type={raw.Type} | ReqId={raw.RequestId}");
+        Logger.Debug("MessageRouter", $"<< Type={raw.Type}", conn: _endpoint, reqId: raw.RequestId);
 
         switch (raw.Type)
         {
@@ -79,7 +80,7 @@ internal sealed class ClientSession
                 break;
 
             default:
-                Log($"  [Unknown type {raw.Type}] ignored.");
+                Logger.Warn("MessageRouter", $"Unknown message type '{raw.Type}' — ignored.", conn: _endpoint, reqId: raw.RequestId);
                 break;
         }
     }
@@ -107,7 +108,7 @@ internal sealed class ClientSession
             _db = await SqlConnectionFactory.OpenAsync(req, ct);
             await StudentRepository.EnsureSchemaAsync(_db, ct);
 
-            Log($"  DB connected: {req.SqlHost}:{req.SqlPort}/{req.Database}");
+            Logger.Info("Db", $"Connected to {req.SqlHost}:{req.SqlPort}/{req.Database}.", conn: _endpoint, reqId: raw.RequestId);
 
             await SendAsync(stream, MessageType.DbConnectOk,
                 new DbConnectResponse(true, null), raw.RequestId, ct);
@@ -116,7 +117,8 @@ internal sealed class ClientSession
         {
             _db?.Dispose();
             _db = null;
-            Log($"  [DbConnect Error] {ex.Message}");
+            // Log connection context (host/db only) — never log username or password.
+            Logger.Error("Db", $"DbConnect failed for {req.SqlHost}:{req.SqlPort}/{req.Database}.", conn: _endpoint, reqId: raw.RequestId, ex: ex);
             await SendAsync(stream, MessageType.DbConnectFail,
                 new DbConnectResponse(false, ex.Message), raw.RequestId, ct);
         }
@@ -162,13 +164,13 @@ internal sealed class ClientSession
 
             await StudentRepository.UpsertEncryptedAsync(_db, row, ct);
 
-            Log($"  StudentAdd OK: {req.StudentId} - {req.FullName}");
+            Logger.Info("Session", $"StudentAdd OK: id={req.StudentId}.", conn: _endpoint, reqId: raw.RequestId);
             await SendAsync(stream, MessageType.StudentAddOk,
                 SimpleResponse.Ok(), raw.RequestId, ct);
         }
         catch (Exception ex)
         {
-            Log($"  [StudentAdd Error] {ex.Message}");
+            Logger.Error("Session", "StudentAdd failed.", conn: _endpoint, reqId: raw.RequestId, ex: ex);
             await SendAsync(stream, MessageType.StudentAddFail,
                 SimpleResponse.Fail(ex.Message), raw.RequestId, ct);
         }
@@ -177,11 +179,15 @@ internal sealed class ClientSession
     private async Task HandleResultsGetAsync(
         NetworkStream stream, RawEnvelope raw, CancellationToken ct)
     {
+        // Guard: database must be connected before any results query.
         if (_db is null)
         {
-            Log("  [ResultsGet] No DB connection - returning empty list.");
-            await SendAsync(stream, MessageType.Results,
-                new List<StudentResultDto>(), raw.RequestId, ct);
+            Logger.Warn("Session", "ResultsGet: no active DB connection.", conn: _endpoint, reqId: raw.RequestId);
+            await SendAsync(stream, MessageType.ResultsFail,
+                new ResultsGetError(
+                    ErrorCode: "NO_DB_CONNECTION",
+                    Message: "No active database connection. Send DbConnect first."),
+                raw.RequestId, ct);
             return;
         }
 
@@ -189,11 +195,17 @@ internal sealed class ClientSession
         try { req = raw.Payload.Deserialize<ResultsGetRequest>(JsonDefaults.Options); }
         catch { req = null; }
 
+        // Guard: request must parse correctly and satisfy IsValid() (mode + studentId check).
         if (req is null || !req.IsValid())
         {
-            Log("  [ResultsGet] Malformed request - returning empty list.");
-            await SendAsync(stream, MessageType.Results,
-                new List<StudentResultDto>(), raw.RequestId, ct);
+            Logger.Warn("Session", $"ResultsGet: invalid request — mode='{req?.Mode}' studentId='{req?.StudentId}'.", conn: _endpoint, reqId: raw.RequestId);
+            await SendAsync(stream, MessageType.ResultsFail,
+                new ResultsGetError(
+                    ErrorCode: "INVALID_REQUEST",
+                    Message: req?.Mode == ResultsMode.ById && string.IsNullOrWhiteSpace(req.StudentId)
+                        ? "Mode BY_ID requires a non-empty StudentId."
+                        : "Malformed ResultsGetRequest: check Mode and StudentId fields."),
+                raw.RequestId, ct);
             return;
         }
 
@@ -214,14 +226,17 @@ internal sealed class ClientSession
 
             var results = rows.ConvertAll(DecryptRow);
 
-            Log($"  ResultsGet OK: {results.Count} row(s) returned.");
+            Logger.Info("Session", $"ResultsGet OK: {results.Count} row(s).", conn: _endpoint, reqId: raw.RequestId);
             await SendAsync(stream, MessageType.Results, results, raw.RequestId, ct);
         }
         catch (Exception ex)
         {
-            Log($"  [ResultsGet Error] {ex.Message}");
-            await SendAsync(stream, MessageType.Results,
-                new List<StudentResultDto>(), raw.RequestId, ct);
+            Logger.Error("Session", "ResultsGet failed.", conn: _endpoint, reqId: raw.RequestId, ex: ex);
+            await SendAsync(stream, MessageType.ResultsFail,
+                new ResultsGetError(
+                    ErrorCode: "INTERNAL_ERROR",
+                    Message: ex.Message),
+                raw.RequestId, ct);
         }
     }
 
@@ -252,6 +267,4 @@ internal sealed class ClientSession
         return LengthPrefixedJsonProtocol.WriteAsync(stream, envelope, ct);
     }
 
-    private static void Log(string message)
-        => System.Console.WriteLine($"[{DateTimeOffset.Now:HH:mm:ss.fff}] {message}");
 }

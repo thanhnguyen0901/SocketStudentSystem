@@ -1,6 +1,7 @@
 using Caliburn.Micro;
 using Student.Shared.DTOs;
 using StudentClient.Wpf.Services;
+using System.Windows;
 
 namespace StudentClient.Wpf.ViewModels;
 
@@ -68,6 +69,14 @@ public sealed class DbConnectViewModel : Screen
         set { _isBusy = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanConnectDb)); }
     }
 
+    // Momentary trigger: set to true to ask the View to focus SqlHost, then immediately reset.
+    private bool _focusSqlHost;
+    public bool FocusSqlHost
+    {
+        get => _focusSqlHost;
+        set { _focusSqlHost = value; NotifyOfPropertyChange(); }
+    }
+
     public bool CanConnectDb
         => !IsBusy
         && !string.IsNullOrWhiteSpace(SqlHost)
@@ -98,12 +107,33 @@ public sealed class DbConnectViewModel : Screen
             }
             else
             {
-                Status = $"DB connect failed: {response.ErrorMessage}";
+                var msg = response.ErrorMessage ?? "Unknown error.";
+                Status = $"DB connect failed: {msg}";
+
+                // Show a visible popup so the error is not missed.
+                MessageBox.Show(
+                    $"Kết nối DB thất bại:\n{msg}",
+                    "Lỗi kết nối Database",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                // Ask the View to move focus back to SqlHost so the user can correct it.
+                FocusSqlHost = true;
+                FocusSqlHost = false;
             }
         }
         catch (Exception ex)
         {
             Status = $"Error: {ex.Message}";
+
+            MessageBox.Show(
+                $"Kết nối DB thất bại:\n{ex.Message}",
+                "Lỗi kết nối Database",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+
+            FocusSqlHost = true;
+            FocusSqlHost = false;
         }
         finally
         {

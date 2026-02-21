@@ -17,6 +17,10 @@ public sealed class StudentEntryViewModel : Screen
     private string _status = "Enter student data and click Add Student.";
     private bool _isBusy;
 
+    // Query-mode state: true = Get All; false = Get By Student ID.
+    private bool _isGetAllSelected = true;
+    private string? _studentIdFilter;
+
     public StudentEntryViewModel(TcpStudentService service)
     {
         _service = service;
@@ -71,6 +75,45 @@ public sealed class StudentEntryViewModel : Screen
         }
     }
 
+    /// <summary>Bound to the "Get All" RadioButton.</summary>
+    public bool IsGetAllSelected
+    {
+        get => _isGetAllSelected;
+        set
+        {
+            _isGetAllSelected = value;
+            NotifyOfPropertyChange();
+            // Keep IsGetByIdSelected in sync (opposite of IsGetAllSelected).
+            NotifyOfPropertyChange(nameof(IsGetByIdSelected));
+            NotifyOfPropertyChange(nameof(CanGetResults));
+        }
+    }
+
+    /// <summary>Bound to the "Get By ID" RadioButton; computed as the inverse of IsGetAllSelected.</summary>
+    public bool IsGetByIdSelected
+    {
+        get => !_isGetAllSelected;
+        set
+        {
+            _isGetAllSelected = !value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(IsGetAllSelected));
+            NotifyOfPropertyChange(nameof(CanGetResults));
+        }
+    }
+
+    /// <summary>Student ID filter used when IsGetByIdSelected is true.</summary>
+    public string? StudentIdFilter
+    {
+        get => _studentIdFilter;
+        set
+        {
+            _studentIdFilter = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanGetResults));
+        }
+    }
+
     // Bound to the DataGrid in StudentEntryView.
     public ObservableCollection<StudentResultDto> Results { get; } = [];
 
@@ -84,7 +127,10 @@ public sealed class StudentEntryViewModel : Screen
         && TryParseScore(English, out _);
 
     public bool CanGetResults
-        => !IsBusy && _service.IsDbConnected;
+        => !IsBusy
+        && _service.IsDbConnected
+        // When "Get By ID" is selected, a non-empty filter is required.
+        && (_isGetAllSelected || !string.IsNullOrWhiteSpace(_studentIdFilter));
 
     public async Task AddStudent()
     {
@@ -129,13 +175,17 @@ public sealed class StudentEntryViewModel : Screen
 
     public async Task GetResults()
     {
+        // Build the request according to the selected query mode.
+        var request = _isGetAllSelected
+            ? new ResultsGetRequest(ResultsMode.All, null)
+            : new ResultsGetRequest(ResultsMode.ById, StudentIdFilter);
+
         IsBusy = true;
         Status = "Fetching results...";
 
         try
         {
-            var rows = await _service.SendResultsGetAsync(
-                new ResultsGetRequest(ResultsMode.All, null));
+            var rows = await _service.SendResultsGetAsync(request);
 
             Results.Clear();
             foreach (var row in rows)

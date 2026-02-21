@@ -15,4 +15,5 @@ public enum MessageType : byte
     // Results queries
     ResultsGet = 20,
     Results = 21,
+    ResultsFail = 22,
 }
