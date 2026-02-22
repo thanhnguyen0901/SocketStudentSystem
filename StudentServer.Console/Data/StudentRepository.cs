@@ -111,6 +111,6 @@ internal static class StudentRepository
             MathEnc = (byte[])reader["MathEnc"],
             LiteratureEnc = (byte[])reader["LiteratureEnc"],
             EnglishEnc = (byte[])reader["EnglishEnc"],
-            CreatedAt = reader.GetDateTimeOffset(reader.GetOrdinal("CreatedAt")),
+            CreatedAt = new DateTimeOffset(reader.GetDateTime(reader.GetOrdinal("CreatedAt")), TimeSpan.Zero),
         };
 }

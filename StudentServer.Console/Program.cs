@@ -63,7 +63,9 @@ finally
     Logger.Info("Server", "Accept loop stopped. Waiting for active sessions to finish.");
 
     if (sessions.Count > 0)
+    {
         await Task.WhenAll(sessions).WaitAsync(TimeSpan.FromSeconds(5));
+    }
 
     Logger.Info("Server", "Server stopped.");
 }
