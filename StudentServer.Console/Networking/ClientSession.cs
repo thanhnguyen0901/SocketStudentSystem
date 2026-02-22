@@ -124,8 +124,7 @@ internal sealed class ClientSession
         }
     }
 
-    private async Task HandleStudentAddAsync(
-        NetworkStream stream, RawEnvelope raw, CancellationToken ct)
+    private async Task HandleStudentAddAsync(NetworkStream stream, RawEnvelope raw, CancellationToken ct)
     {
         if (_db is null)
         {
@@ -136,8 +135,14 @@ internal sealed class ClientSession
         }
 
         StudentAddRequest? req;
-        try { req = raw.Payload.Deserialize<StudentAddRequest>(JsonDefaults.Options); }
-        catch { req = null; }
+        try
+        {
+            req = raw.Payload.Deserialize<StudentAddRequest>(JsonDefaults.Options);
+        }
+        catch
+        {
+            req = null;
+        }
 
         if (req is null || !req.IsValid())
         {
@@ -176,8 +181,7 @@ internal sealed class ClientSession
         }
     }
 
-    private async Task HandleResultsGetAsync(
-        NetworkStream stream, RawEnvelope raw, CancellationToken ct)
+    private async Task HandleResultsGetAsync(NetworkStream stream, RawEnvelope raw, CancellationToken ct)
     {
         // Guard: database must be connected before any results query.
         if (_db is null)
@@ -192,8 +196,14 @@ internal sealed class ClientSession
         }
 
         ResultsGetRequest? req;
-        try { req = raw.Payload.Deserialize<ResultsGetRequest>(JsonDefaults.Options); }
-        catch { req = null; }
+        try
+        {
+            req = raw.Payload.Deserialize<ResultsGetRequest>(JsonDefaults.Options);
+        }
+        catch
+        {
+            req = null;
+        }
 
         // Guard: request must parse correctly and satisfy IsValid() (mode + studentId check).
         if (req is null || !req.IsValid())
@@ -219,8 +229,7 @@ internal sealed class ClientSession
             }
             else // BY_ID
             {
-                var single = await StudentRepository.GetByStudentIdAsync(
-                    _db, req.StudentId!, ct);
+                var single = await StudentRepository.GetByStudentIdAsync(_db, req.StudentId!, ct);
                 rows = single is null ? [] : [single];
             }
 
@@ -243,28 +252,16 @@ internal sealed class ClientSession
     private StudentResultDto DecryptRow(EncryptedStudentRow row)
     {
         string fullName = _crypto.DecryptToString(row.FullNameEnc);
-        double math = double.Parse(
-                                _crypto.DecryptToString(row.MathEnc),
-                                CultureInfo.InvariantCulture);
-        double literature = double.Parse(
-                                _crypto.DecryptToString(row.LiteratureEnc),
-                                CultureInfo.InvariantCulture);
-        double english = double.Parse(
-                                _crypto.DecryptToString(row.EnglishEnc),
-                                CultureInfo.InvariantCulture);
+        double math = double.Parse(_crypto.DecryptToString(row.MathEnc), CultureInfo.InvariantCulture);
+        double literature = double.Parse(_crypto.DecryptToString(row.LiteratureEnc), CultureInfo.InvariantCulture);
+        double english = double.Parse(_crypto.DecryptToString(row.EnglishEnc), CultureInfo.InvariantCulture);
 
         return StudentResultDto.Create(fullName, row.StudentId, math, literature, english);
     }
 
-    private static Task SendAsync<T>(
-        NetworkStream stream,
-        MessageType type,
-        T payload,
-        string requestId,
-        CancellationToken ct)
+    private static Task SendAsync<T>(NetworkStream stream, MessageType type, T payload, string requestId, CancellationToken ct)
     {
         var envelope = MessageEnvelope.CreateResponse(type, payload, requestId);
         return LengthPrefixedJsonProtocol.WriteAsync(stream, envelope, ct);
     }
-
 }

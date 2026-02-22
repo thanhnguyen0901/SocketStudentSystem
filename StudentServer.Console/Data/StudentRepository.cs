@@ -5,9 +5,7 @@ namespace StudentServer.Console.Data;
 internal static class StudentRepository
 {
     // Creates dbo.StudentsEncrypted if it does not exist.
-    internal static async Task EnsureSchemaAsync(
-        SqlConnection conn,
-        CancellationToken ct = default)
+    internal static async Task EnsureSchemaAsync(SqlConnection conn, CancellationToken ct = default)
     {
         const string sql = """
             IF NOT EXISTS (
@@ -37,10 +35,7 @@ internal static class StudentRepository
     }
 
     // MERGE provides an atomic UPSERT; CreatedAt is preserved on UPDATE.
-    internal static async Task UpsertEncryptedAsync(
-        SqlConnection conn,
-        EncryptedStudentRow row,
-        CancellationToken ct = default)
+    internal static async Task UpsertEncryptedAsync(SqlConnection conn, EncryptedStudentRow row, CancellationToken ct = default)
     {
         const string sql = """
             MERGE dbo.StudentsEncrypted AS target
@@ -67,9 +62,7 @@ internal static class StudentRepository
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    internal static async Task<List<EncryptedStudentRow>> GetAllAsync(
-        SqlConnection conn,
-        CancellationToken ct = default)
+    internal static async Task<List<EncryptedStudentRow>> GetAllAsync(SqlConnection conn, CancellationToken ct = default)
     {
         const string sql = """
             SELECT Id, StudentId, FullNameEnc, MathEnc, LiteratureEnc, EnglishEnc, CreatedAt
@@ -87,10 +80,7 @@ internal static class StudentRepository
         return rows;
     }
 
-    internal static async Task<EncryptedStudentRow?> GetByStudentIdAsync(
-        SqlConnection conn,
-        string studentId,
-        CancellationToken ct = default)
+    internal static async Task<EncryptedStudentRow?> GetByStudentIdAsync(SqlConnection conn, string studentId, CancellationToken ct = default)
     {
         const string sql = """
             SELECT TOP 1
@@ -105,7 +95,9 @@ internal static class StudentRepository
         await using var reader = await cmd.ExecuteReaderAsync(ct);
 
         if (await reader.ReadAsync(ct))
+        {
             return MapRow(reader);
+        }
 
         return null;
     }

@@ -11,16 +11,14 @@ public static class LengthPrefixedJsonProtocol
     private const int MaxPayloadBytes = 1 * 1024 * 1024; // 1 MiB guard
     private const int HeaderSize = sizeof(int);
 
-    public static async Task WriteAsync<T>(
-        NetworkStream stream,
-        T message,
-        CancellationToken ct = default)
+    public static async Task WriteAsync<T>(NetworkStream stream, T message, CancellationToken ct = default)
     {
         byte[] payload = JsonSerializer.SerializeToUtf8Bytes(message, JsonDefaults.Options);
 
         if (payload.Length > MaxPayloadBytes)
-            throw new ArgumentException(
-                $"Serialized payload ({payload.Length:N0} B) exceeds the maximum of {MaxPayloadBytes:N0} B.");
+        {
+            throw new ArgumentException($"Serialized payload ({payload.Length:N0} B) exceeds the maximum of {MaxPayloadBytes:N0} B.");
+        }
 
         // Single WriteAsync call avoids Nagle-algorithm latency.
         byte[] frame = new byte[HeaderSize + payload.Length];
@@ -31,9 +29,7 @@ public static class LengthPrefixedJsonProtocol
         await stream.FlushAsync(ct);
     }
 
-    public static async Task<T> ReadAsync<T>(
-        NetworkStream stream,
-        CancellationToken ct = default)
+    public static async Task<T> ReadAsync<T>(NetworkStream stream, CancellationToken ct = default)
     {
         byte[] header = new byte[HeaderSize];
         await ReadExactlyAsync(stream, header, ct);
@@ -41,35 +37,34 @@ public static class LengthPrefixedJsonProtocol
         int payloadLength = BinaryPrimitives.ReadInt32LittleEndian(header);
 
         if (payloadLength <= 0)
-            throw new InvalidDataException(
-                $"Framing error: length prefix {payloadLength} is not positive.");
+        {
+            throw new InvalidDataException($"Framing error: length prefix {payloadLength} is not positive.");
+        }
 
         if (payloadLength > MaxPayloadBytes)
-            throw new InvalidDataException(
-                $"Framing error: length prefix {payloadLength:N0} B exceeds the maximum of {MaxPayloadBytes:N0} B.");
+        {
+            throw new InvalidDataException($"Framing error: length prefix {payloadLength:N0} B exceeds the maximum of {MaxPayloadBytes:N0} B.");
+        }
 
         byte[] payload = new byte[payloadLength];
         await ReadExactlyAsync(stream, payload, ct);
 
         return JsonSerializer.Deserialize<T>(payload, JsonDefaults.Options)
-               ?? throw new JsonException($"Deserializing '{typeof(T).Name}' produced null.");
+            ?? throw new JsonException($"Deserializing '{typeof(T).Name}' produced null.");
     }
 
     // Loops over partial TCP reads until the buffer is fully filled.
-    internal static async Task ReadExactlyAsync(
-        Stream stream,
-        byte[] buffer,
-        CancellationToken ct)
+    internal static async Task ReadExactlyAsync(Stream stream, byte[] buffer, CancellationToken ct)
     {
         int offset = 0;
         while (offset < buffer.Length)
         {
-            int bytesRead = await stream.ReadAsync(
-                buffer.AsMemory(offset, buffer.Length - offset), ct);
+            int bytesRead = await stream.ReadAsync(buffer.AsMemory(offset, buffer.Length - offset), ct);
 
             if (bytesRead == 0)
-                throw new IOException(
-                    "Remote host closed the connection before the full frame was received.");
+            {
+                throw new IOException("Remote host closed the connection before the full frame was received.");
+            }
 
             offset += bytesRead;
         }

@@ -15,7 +15,9 @@ Logger.Info("Crypto", "DES self-test passed.");
 
 int port = 9000;
 if (args.Length > 0 && int.TryParse(args[0], out int parsed) && parsed is > 0 and <= 65535)
+{
     port = parsed;
+}
 
 using var cts = new CancellationTokenSource();
 System.Console.CancelKeyPress += (_, e) =>
@@ -46,10 +48,7 @@ try
             break;
         }
 
-        client.Client.SetSocketOption(
-            SocketOptionLevel.Socket,
-            SocketOptionName.KeepAlive,
-            true);
+        client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
 
         var session = new ClientSession(client, crypto);
         var sessionTask = Task.Run(() => session.RunAsync(cts.Token), cts.Token);

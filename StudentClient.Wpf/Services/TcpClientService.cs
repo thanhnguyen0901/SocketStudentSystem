@@ -9,17 +9,14 @@ namespace StudentClient.Wpf.Services;
 // serialize concurrent callers (safety net; UI flow is sequential in practice).
 public sealed class TcpClientService : IDisposable
 {
+    private readonly SemaphoreSlim _gate = new(1, 1);
+
     private TcpClient? _tcpClient;
     private NetworkStream? _stream;
 
-    private readonly SemaphoreSlim _gate = new(1, 1);
-
     public bool IsConnected => _tcpClient is { Connected: true };
 
-    public async Task ConnectAsync(
-        string host,
-        int port,
-        CancellationToken ct = default)
+    public async Task ConnectAsync(string host, int port, CancellationToken ct = default)
     {
         CloseConnection();
         _tcpClient = new TcpClient();
@@ -35,10 +32,7 @@ public sealed class TcpClientService : IDisposable
         _tcpClient = null;
     }
 
-    public async Task SendAsync<TPayload>(
-        MessageType type,
-        TPayload payload,
-        CancellationToken ct = default)
+    public async Task SendAsync<TPayload>(MessageType type, TPayload payload, CancellationToken ct = default)
     {
         EnsureConnected();
 
@@ -51,8 +45,7 @@ public sealed class TcpClientService : IDisposable
         catch (Exception ex) when (IsNetworkException(ex))
         {
             CloseConnection();
-            throw new InvalidOperationException(
-                "The connection to the server was lost. Please reconnect.", ex);
+            throw new InvalidOperationException("The connection to the server was lost. Please reconnect.", ex);
         }
         finally
         {
@@ -60,10 +53,7 @@ public sealed class TcpClientService : IDisposable
         }
     }
 
-    public async Task<MessageEnvelope<TResponse>> RequestAsync<TRequest, TResponse>(
-        MessageType type,
-        TRequest payload,
-        CancellationToken ct = default)
+    public async Task<MessageEnvelope<TResponse>> RequestAsync<TRequest, TResponse>(MessageType type, TRequest payload, CancellationToken ct = default)
     {
         EnsureConnected();
 
@@ -73,14 +63,12 @@ public sealed class TcpClientService : IDisposable
             var request = MessageEnvelope.CreateRequest(type, payload);
             await LengthPrefixedJsonProtocol.WriteAsync(_stream!, request, ct);
 
-            return await LengthPrefixedJsonProtocol
-                .ReadAsync<MessageEnvelope<TResponse>>(_stream!, ct);
+            return await LengthPrefixedJsonProtocol.ReadAsync<MessageEnvelope<TResponse>>(_stream!, ct);
         }
         catch (Exception ex) when (IsNetworkException(ex))
         {
             CloseConnection();
-            throw new InvalidOperationException(
-                "The connection to the server was lost. Please reconnect.", ex);
+            throw new InvalidOperationException("The connection to the server was lost. Please reconnect.", ex);
         }
         finally
         {
@@ -97,10 +85,10 @@ public sealed class TcpClientService : IDisposable
     private void EnsureConnected()
     {
         if (_stream is null || !IsConnected)
-            throw new InvalidOperationException(
-                "Not connected to the server. Call ConnectAsync first.");
+        {
+            throw new InvalidOperationException("Not connected to the server. Call ConnectAsync first.");
+        }
     }
 
-    private static bool IsNetworkException(Exception ex)
-        => ex is IOException or SocketException;
+    private static bool IsNetworkException(Exception ex) => ex is IOException or SocketException;
 }

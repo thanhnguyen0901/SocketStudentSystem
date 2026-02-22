@@ -18,12 +18,14 @@ internal sealed class DesCryptoService
         ArgumentNullException.ThrowIfNull(iv8, nameof(iv8));
 
         if (key8.Length != RequiredKeyLength)
-            throw new ArgumentException(
-                $"DES key must be exactly {RequiredKeyLength} bytes (got {key8.Length}).", nameof(key8));
+        {
+            throw new ArgumentException($"DES key must be exactly {RequiredKeyLength} bytes (got {key8.Length}).", nameof(key8));
+        }
 
         if (iv8.Length != RequiredKeyLength)
-            throw new ArgumentException(
-                $"DES IV must be exactly {RequiredKeyLength} bytes (got {iv8.Length}).", nameof(iv8));
+        {
+            throw new ArgumentException($"DES IV must be exactly {RequiredKeyLength} bytes (got {iv8.Length}).", nameof(iv8));
+        }
 
         // Defensive copies so the caller cannot mutate the key after construction.
         _key = (byte[])key8.Clone();
@@ -41,7 +43,9 @@ internal sealed class DesCryptoService
         ArgumentNullException.ThrowIfNull(cipherBytes, nameof(cipherBytes));
 
         if (cipherBytes.Length == 0)
+        {
             throw new ArgumentException("Cipher bytes must not be empty.", nameof(cipherBytes));
+        }
 
         return TextEncoding.GetString(Decrypt(cipherBytes));
     }
@@ -90,6 +94,7 @@ internal sealed class DesCryptoService
             cryptoStream.Write(input, 0, input.Length);
             cryptoStream.FlushFinalBlock();
         }
+
         return outputStream.ToArray();
     }
 }

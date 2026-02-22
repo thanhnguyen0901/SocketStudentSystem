@@ -5,9 +5,7 @@ namespace StudentServer.Console.Data;
 
 internal static class SqlConnectionFactory
 {
-    internal static async Task<SqlConnection> OpenAsync(
-        DbConnectRequest request,
-        CancellationToken ct = default)
+    internal static async Task<SqlConnection> OpenAsync(DbConnectRequest request, CancellationToken ct = default)
     {
         var connection = new SqlConnection(BuildConnectionString(request));
         await connection.OpenAsync(ct);
