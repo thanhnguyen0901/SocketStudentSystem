@@ -14,22 +14,41 @@ public sealed class TcpClientService : IDisposable
     private TcpClient? _tcpClient;
     private NetworkStream? _stream;
 
+    public event EventHandler? ConnectionStateChanged;
+
     public bool IsConnected => _tcpClient is { Connected: true };
 
     public async Task ConnectAsync(string host, int port, CancellationToken ct = default)
     {
-        CloseConnection();
+        CloseConnection(raiseEvent: false);
         _tcpClient = new TcpClient();
-        await _tcpClient.ConnectAsync(host, port, ct);
-        _stream = _tcpClient.GetStream();
+        try
+        {
+            await _tcpClient.ConnectAsync(host, port, ct);
+            _stream = _tcpClient.GetStream();
+            OnConnectionStateChanged();
+        }
+        catch
+        {
+            CloseConnection(raiseEvent: false);
+            throw;
+        }
     }
 
-    public void CloseConnection()
+    public void CloseConnection() => CloseConnection(raiseEvent: true);
+
+    private void CloseConnection(bool raiseEvent)
     {
+        bool wasConnected = _stream is not null || _tcpClient is not null;
         _stream?.Dispose();
         _tcpClient?.Dispose();
         _stream = null;
         _tcpClient = null;
+
+        if (raiseEvent && wasConnected)
+        {
+            OnConnectionStateChanged();
+        }
     }
 
     public async Task SendAsync<TPayload>(MessageType type, TPayload payload, CancellationToken ct = default)
@@ -45,7 +64,7 @@ public sealed class TcpClientService : IDisposable
         catch (Exception ex) when (IsNetworkException(ex))
         {
             CloseConnection();
-            throw new InvalidOperationException("The connection to the server was lost. Please reconnect.", ex);
+            throw new InvalidOperationException("Kết nối tới máy chủ đã bị gián đoạn. Vui lòng kết nối lại.", ex);
         }
         finally
         {
@@ -68,7 +87,7 @@ public sealed class TcpClientService : IDisposable
         catch (Exception ex) when (IsNetworkException(ex))
         {
             CloseConnection();
-            throw new InvalidOperationException("The connection to the server was lost. Please reconnect.", ex);
+            throw new InvalidOperationException("Kết nối tới máy chủ đã bị gián đoạn. Vui lòng kết nối lại.", ex);
         }
         finally
         {
@@ -82,11 +101,13 @@ public sealed class TcpClientService : IDisposable
         _gate.Dispose();
     }
 
+    private void OnConnectionStateChanged() => ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
+
     private void EnsureConnected()
     {
         if (_stream is null || !IsConnected)
         {
-            throw new InvalidOperationException("Not connected to the server. Call ConnectAsync first.");
+            throw new InvalidOperationException("Chưa kết nối tới máy chủ. Hãy kết nối trước khi thao tác.");
         }
     }
 

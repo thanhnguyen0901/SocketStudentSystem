@@ -9,3 +9,6 @@ Client:
 Server:
 -	Nhận thông tin sql từ client và kết nối sql server.
 -	Nhận dữ liệu từ client thực hiện mã hóa bằng thuật toán DES sau đó lưu vào sql và nhận thông số từ giao diện để đọc giải mã dữ liệu, sau đó tính điểm trung bình của từng bạn và gửi về cho client
+
+LOGIN student_app
+PASSWORD = 'StrongPass!123'

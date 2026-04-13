@@ -4,88 +4,112 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="300"
-    d:DesignWidth="580"
+    d:DesignHeight="540"
+    d:DesignWidth="920"
     mc:Ignorable="d">
 
-    <Border Padding="24">
-        <StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <!--  Section heading  -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
             <TextBlock
-                Margin="0,0,0,16"
-                FontSize="16"
+                FontSize="24"
                 FontWeight="SemiBold"
-                Text="Connect to Server" />
+                Text="Kết nối máy chủ" />
+        </StackPanel>
 
-            <GroupBox Padding="8" Header="Server Address">
-                <Grid>
+        <Border
+            Grid.Row="1"
+            Margin="0,0,0,18"
+            Padding="18"
+            Background="{StaticResource PanelAltBackgroundBrush}"
+            BorderBrush="{StaticResource BorderBrushSoft}"
+            BorderThickness="1"
+            CornerRadius="16">
+            <TextBlock
+                FontSize="13"
+                Foreground="{StaticResource TextMutedBrush}"
+                Text="Gợi ý: nếu chạy server trên cùng máy, bạn có thể dùng localhost:9000." />
+        </Border>
+
+        <Border
+            Grid.Row="2"
+            Padding="24"
+            Background="White"
+            BorderBrush="{StaticResource BorderBrushSoft}"
+            BorderThickness="1"
+            CornerRadius="20"
+            VerticalAlignment="Top">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="18" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="22" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2.2*" />
+                        <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="16" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="10" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
 
-                    <!--  Host  -->
-                    <Label
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        VerticalAlignment="Center"
-                        Content="Host / IP:" />
-                    <!--  x:Name="Host" binds to ViewModel.Host via Caliburn convention  -->
-                    <TextBox
-                        x:Name="Host"
-                        Grid.Row="0"
-                        Grid.Column="1"
-                        Height="26"
-                        VerticalContentAlignment="Center" />
+                    <StackPanel Grid.Column="0" Margin="0,0,18,0">
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="Địa chỉ máy chủ" />
+                        <TextBox
+                            x:Name="Host"
+                            Margin="0,8,0,0"
+                            IsEnabled="{Binding AreInputsEnabled}" />
+                    </StackPanel>
 
-                    <!--  Port  -->
-                    <Label
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        VerticalAlignment="Center"
-                        Content="Port:" />
-                    <TextBox
-                        x:Name="Port"
-                        Grid.Row="2"
-                        Grid.Column="1"
-                        Height="26"
-                        VerticalContentAlignment="Center" />
+                    <StackPanel Grid.Column="1">
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="Cổng TCP" />
+                        <TextBox
+                            x:Name="Port"
+                            Margin="0,8,0,0"
+                            IsEnabled="{Binding AreInputsEnabled}" />
+                    </StackPanel>
+                </Grid>
 
-                    <!--
-                    Connect button — x:Name="Connect" triggers ViewModel.Connect()
-                    Caliburn evaluates CanConnect to set IsEnabled.
-                    -->
+                <StackPanel Grid.Row="2">
                     <Button
                         x:Name="Connect"
-                        Grid.Row="4"
-                        Grid.Column="1"
-                        Padding="28,5"
+                        Width="180"
                         HorizontalAlignment="Left"
-                        Content="Connect" />
+                        Content="Kết nối máy chủ" />
+                </StackPanel>
 
-                    <!--  Status  -->
-                    <TextBlock
-                        x:Name="Status"
-                        Grid.Row="6"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="2"
-                        FontStyle="Italic"
-                        Foreground="DimGray"
-                        TextWrapping="Wrap" />
-
-                </Grid>
-            </GroupBox>
-
-        </StackPanel>
-    </Border>
+                <Border
+                    Grid.Row="4"
+                    Padding="14"
+                    Background="{StaticResource SuccessBrush}"
+                    CornerRadius="12">
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{StaticResource SuccessTextBrush}"
+                            Text="TRẠNG THÁI KẾT NỐI" />
+                        <TextBlock
+                            x:Name="Status"
+                            Margin="0,6,0,0"
+                            FontSize="14"
+                            Foreground="{StaticResource TextPrimaryBrush}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>

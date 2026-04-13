@@ -34,22 +34,13 @@ internal static class StudentRepository
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    // MERGE provides an atomic UPSERT; CreatedAt is preserved on UPDATE.
-    internal static async Task UpsertEncryptedAsync(SqlConnection conn, EncryptedStudentRow row, CancellationToken ct = default)
+    internal static async Task InsertEncryptedAsync(SqlConnection conn, EncryptedStudentRow row, CancellationToken ct = default)
     {
         const string sql = """
-            MERGE dbo.StudentsEncrypted AS target
-            USING (SELECT @StudentId AS StudentId) AS source
-                ON target.StudentId = source.StudentId
-            WHEN MATCHED THEN
-                UPDATE SET
-                    FullNameEnc   = @FullNameEnc,
-                    MathEnc       = @MathEnc,
-                    LiteratureEnc = @LiteratureEnc,
-                    EnglishEnc    = @EnglishEnc
-            WHEN NOT MATCHED THEN
-                INSERT (StudentId, FullNameEnc, MathEnc, LiteratureEnc, EnglishEnc)
-                VALUES (@StudentId, @FullNameEnc, @MathEnc, @LiteratureEnc, @EnglishEnc);
+            INSERT INTO dbo.StudentsEncrypted
+                (StudentId, FullNameEnc, MathEnc, LiteratureEnc, EnglishEnc)
+            VALUES
+                (@StudentId, @FullNameEnc, @MathEnc, @LiteratureEnc, @EnglishEnc);
             """;
 
         await using var cmd = new SqlCommand(sql, conn);

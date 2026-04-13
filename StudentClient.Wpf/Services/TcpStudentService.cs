@@ -8,34 +8,37 @@ namespace StudentClient.Wpf.Services;
 public sealed class TcpStudentService : IDisposable
 {
     private readonly TcpClientService _tcp;
+    private bool _isDbConnected;
 
-    public TcpStudentService(TcpClientService tcp) => _tcp = tcp;
+    public TcpStudentService(TcpClientService tcp)
+    {
+        _tcp = tcp;
+        _tcp.ConnectionStateChanged += OnTcpConnectionStateChanged;
+    }
+
+    public event EventHandler? StateChanged;
 
     public bool IsConnected => _tcp.IsConnected;
 
-    // Reset to false whenever a new TCP connection is opened.
-    public bool IsDbConnected { get; private set; }
+    public bool IsDbConnected => _isDbConnected;
 
     public async Task ConnectAsync(string host, int port, CancellationToken ct = default)
     {
         await _tcp.ConnectAsync(host, port, ct);
-        IsDbConnected = false;
+        SetDbConnected(false);
     }
 
     public void Disconnect()
     {
         _tcp.CloseConnection();
-        IsDbConnected = false;
+        SetDbConnected(false);
     }
 
     public async Task<DbConnectResponse> SendDbConnectAsync(DbConnectRequest request, CancellationToken ct = default)
     {
         var envelope = await _tcp.RequestAsync<DbConnectRequest, DbConnectResponse>(MessageType.DbConnect, request, ct);
 
-        if (envelope.Payload.Success)
-        {
-            IsDbConnected = true;
-        }
+        SetDbConnected(envelope.Payload.Success);
 
         return envelope.Payload;
     }
@@ -57,12 +60,40 @@ public sealed class TcpStudentService : IDisposable
         {
             // Deserialize the error details to surface a user-readable message.
             var error = envelope.Payload.Deserialize<ResultsGetError>(JsonDefaults.Options);
-            throw new InvalidOperationException(error?.Message ?? "Server rejected the results query.");
+            throw new InvalidOperationException(error?.Message ?? "Máy chủ từ chối yêu cầu lấy dữ liệu.");
         }
 
         var rows = envelope.Payload.Deserialize<List<StudentResultDto>>(JsonDefaults.Options);
         return rows ?? [];
     }
 
-    public void Dispose() => _tcp.Dispose();
+    public void Dispose()
+    {
+        _tcp.ConnectionStateChanged -= OnTcpConnectionStateChanged;
+        _tcp.Dispose();
+    }
+
+    private void OnTcpConnectionStateChanged(object? sender, EventArgs e)
+    {
+        if (!IsConnected)
+        {
+            _isDbConnected = false;
+        }
+
+        OnStateChanged();
+    }
+
+    private void SetDbConnected(bool value)
+    {
+        if (_isDbConnected == value)
+        {
+            OnStateChanged();
+            return;
+        }
+
+        _isDbConnected = value;
+        OnStateChanged();
+    }
+
+    private void OnStateChanged() => StateChanged?.Invoke(this, EventArgs.Empty);
 }

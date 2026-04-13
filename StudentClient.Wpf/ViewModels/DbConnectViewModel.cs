@@ -15,79 +15,137 @@ public sealed class DbConnectViewModel : Screen
     private string _username = "sa";
     private string _password = string.Empty;
     private string _database = "SocketStudentSystemDb";
-    private string _status = "Enter SQL Server credentials and click Connect DB.";
+    private string _status = "Chưa kết nối cơ sở dữ liệu.";
     private bool _isBusy;
 
     public DbConnectViewModel(TcpStudentService service, ShellViewModel shell)
     {
         _service = service;
         _shell = shell;
-        DisplayName = "Connect to Database";
+        _service.StateChanged += OnServiceStateChanged;
+        DisplayName = "Kết nối cơ sở dữ liệu";
     }
 
     public string SqlHost
     {
         get => _sqlHost;
-        set { _sqlHost = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanConnectDb)); }
+        set
+        {
+            _sqlHost = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanConnectDb));
+        }
     }
 
     public string SqlPort
     {
         get => _sqlPort;
-        set { _sqlPort = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanConnectDb)); }
+        set
+        {
+            _sqlPort = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanConnectDb));
+        }
     }
 
     public string Username
     {
         get => _username;
-        set { _username = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanConnectDb)); }
+        set
+        {
+            _username = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanConnectDb));
+        }
     }
 
-    // Set by DbConnectView code-behind via PasswordBox.PasswordChanged
-    // (PasswordBox has no bindable Password dependency property).
     public string Password
     {
         get => _password;
-        set { _password = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanConnectDb)); }
+        set
+        {
+            _password = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanConnectDb));
+        }
     }
 
     public string Database
     {
         get => _database;
-        set { _database = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanConnectDb)); }
+        set
+        {
+            _database = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanConnectDb));
+        }
     }
 
     public string Status
     {
         get => _status;
-        set { _status = value; NotifyOfPropertyChange(); }
+        set
+        {
+            _status = value;
+            NotifyOfPropertyChange();
+        }
     }
 
     public bool IsBusy
     {
         get => _isBusy;
-        set { _isBusy = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanConnectDb)); }
+        set
+        {
+            _isBusy = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanConnectDb));
+            NotifyOfPropertyChange(nameof(AreInputsEnabled));
+        }
     }
 
-    // Momentary trigger: set to true to ask the View to focus SqlHost, then immediately reset.
+    public bool AreInputsEnabled => !IsBusy && _service.IsConnected;
+
     private bool _focusSqlHost;
     public bool FocusSqlHost
     {
         get => _focusSqlHost;
-        set { _focusSqlHost = value; NotifyOfPropertyChange(); }
+        set
+        {
+            _focusSqlHost = value;
+            NotifyOfPropertyChange();
+        }
     }
 
     public bool CanConnectDb
         => !IsBusy
+        && _service.IsConnected
         && !string.IsNullOrWhiteSpace(SqlHost)
-        && int.TryParse(SqlPort, out int p) && p is > 0 and <= 65535
+        && int.TryParse(SqlPort, out int p)
+        && p is > 0 and <= 65535
         && !string.IsNullOrWhiteSpace(Username)
+        && !string.IsNullOrWhiteSpace(Password)
         && !string.IsNullOrWhiteSpace(Database);
 
     public async Task ConnectDb()
     {
+        if (!_service.IsConnected)
+        {
+            Status = "Mất kết nối tới máy chủ. Vui lòng kết nối lại.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Password))
+        {
+            MessageBox.Show(
+                "Vui lòng nhập mật khẩu SQL Server.",
+                "Thiếu thông tin",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
         IsBusy = true;
-        Status = $"Connecting to {SqlHost}:{SqlPort}/{Database}...";
+        Status = $"Đang kết nối tới {SqlHost}:{SqlPort}/{Database}...";
 
         try
         {
@@ -102,33 +160,31 @@ public sealed class DbConnectViewModel : Screen
 
             if (response.Success)
             {
-                Status = "Database connected.";
+                Status = "Đã kết nối cơ sở dữ liệu thành công.";
                 await _shell.ShowStudentEntryAsync();
             }
             else
             {
-                var msg = response.ErrorMessage ?? "Unknown error.";
-                Status = $"DB connect failed: {msg}";
+                var message = response.ErrorMessage ?? "Không xác định được nguyên nhân.";
+                Status = $"Kết nối cơ sở dữ liệu thất bại: {message}";
 
-                // Show a visible popup so the error is not missed.
                 MessageBox.Show(
-                    $"Kết nối DB thất bại:\n{msg}",
-                    "Lỗi kết nối Database",
+                    $"Không thể kết nối cơ sở dữ liệu:\n{message}",
+                    "Lỗi kết nối cơ sở dữ liệu",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
 
-                // Ask the View to move focus back to SqlHost so the user can correct it.
                 FocusSqlHost = true;
                 FocusSqlHost = false;
             }
         }
         catch (Exception ex)
         {
-            Status = $"Error: {ex.Message}";
+            Status = $"Kết nối cơ sở dữ liệu thất bại: {ex.Message}";
 
             MessageBox.Show(
-                $"Kết nối DB thất bại:\n{ex.Message}",
-                "Lỗi kết nối Database",
+                $"Không thể kết nối cơ sở dữ liệu:\n{ex.Message}",
+                "Lỗi kết nối cơ sở dữ liệu",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
 
@@ -138,6 +194,17 @@ public sealed class DbConnectViewModel : Screen
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private void OnServiceStateChanged(object? sender, EventArgs e)
+    {
+        NotifyOfPropertyChange(nameof(CanConnectDb));
+        NotifyOfPropertyChange(nameof(AreInputsEnabled));
+
+        if (!_service.IsConnected)
+        {
+            Status = "Mất kết nối tới máy chủ. Vui lòng kết nối lại.";
         }
     }
 }

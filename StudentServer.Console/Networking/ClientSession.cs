@@ -95,7 +95,7 @@ internal sealed class ClientSession
         if (req is null || !req.IsValid())
         {
             await SendAsync(stream, MessageType.DbConnectFail,
-                new DbConnectResponse(false, "Malformed or incomplete DbConnectRequest."),
+                new DbConnectResponse(false, "Thông tin kết nối cơ sở dữ liệu không hợp lệ hoặc chưa đầy đủ."),
                 raw.RequestId, ct);
             return;
         }
@@ -129,7 +129,7 @@ internal sealed class ClientSession
         if (_db is null)
         {
             await SendAsync(stream, MessageType.StudentAddFail,
-                SimpleResponse.Fail("No active database connection. Send DbConnect first."),
+                SimpleResponse.Fail("Chưa có kết nối cơ sở dữ liệu hoạt động. Hãy kết nối cơ sở dữ liệu trước."),
                 raw.RequestId, ct);
             return;
         }
@@ -147,7 +147,7 @@ internal sealed class ClientSession
         if (req is null || !req.IsValid())
         {
             await SendAsync(stream, MessageType.StudentAddFail,
-                SimpleResponse.Fail("Invalid StudentAddRequest: check fields and score range [0, 10]."),
+                SimpleResponse.Fail("Dữ liệu sinh viên không hợp lệ. Hãy kiểm tra lại các trường và điểm trong khoảng từ 0 đến 10."),
                 raw.RequestId, ct);
             return;
         }
@@ -167,11 +167,18 @@ internal sealed class ClientSession
                                     req.English.ToString(CultureInfo.InvariantCulture)),
             };
 
-            await StudentRepository.UpsertEncryptedAsync(_db, row, ct);
+            await StudentRepository.InsertEncryptedAsync(_db, row, ct);
 
             Logger.Info("Session", $"StudentAdd OK: id={req.StudentId}.", conn: _endpoint, reqId: raw.RequestId);
             await SendAsync(stream, MessageType.StudentAddOk,
                 SimpleResponse.Ok(), raw.RequestId, ct);
+        }
+        catch (SqlException ex) when (ex.Number is 2601 or 2627)
+        {
+            Logger.Warn("Session", $"StudentAdd duplicate StudentId: id={req.StudentId}.", conn: _endpoint, reqId: raw.RequestId);
+            await SendAsync(stream, MessageType.StudentAddFail,
+                SimpleResponse.Fail($"Mã sinh viên '{req.StudentId}' đã tồn tại."),
+                raw.RequestId, ct);
         }
         catch (Exception ex)
         {
@@ -190,7 +197,7 @@ internal sealed class ClientSession
             await SendAsync(stream, MessageType.ResultsFail,
                 new ResultsGetError(
                     ErrorCode: "NO_DB_CONNECTION",
-                    Message: "No active database connection. Send DbConnect first."),
+                    Message: "Chưa có kết nối cơ sở dữ liệu hoạt động. Hãy kết nối cơ sở dữ liệu trước."),
                 raw.RequestId, ct);
             return;
         }
@@ -213,8 +220,8 @@ internal sealed class ClientSession
                 new ResultsGetError(
                     ErrorCode: "INVALID_REQUEST",
                     Message: req?.Mode == ResultsMode.ById && string.IsNullOrWhiteSpace(req.StudentId)
-                        ? "Mode BY_ID requires a non-empty StudentId."
-                        : "Malformed ResultsGetRequest: check Mode and StudentId fields."),
+                        ? "Chế độ tra cứu theo mã yêu cầu nhập mã sinh viên."
+                        : "Yêu cầu lấy dữ liệu không hợp lệ. Hãy kiểm tra lại chế độ và mã sinh viên."),
                 raw.RequestId, ct);
             return;
         }

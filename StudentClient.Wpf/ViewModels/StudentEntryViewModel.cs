@@ -14,53 +14,82 @@ public sealed class StudentEntryViewModel : Screen
     private string _math = string.Empty;
     private string _literature = string.Empty;
     private string _english = string.Empty;
-    private string _status = "Enter student data and click Add Student.";
+    private string _status = "Nhập thông tin sinh viên rồi nhấn Lưu sinh viên.";
     private bool _isBusy;
 
-    // Query-mode state: true = Get All; false = Get By Student ID.
     private bool _isGetAllSelected = true;
     private string? _studentIdFilter;
 
     public StudentEntryViewModel(TcpStudentService service)
     {
         _service = service;
-        DisplayName = "Student Entry";
+        _service.StateChanged += OnServiceStateChanged;
+        DisplayName = "Dữ liệu sinh viên";
     }
 
     public string FullName
     {
         get => _fullName;
-        set { _fullName = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanAddStudent)); }
+        set
+        {
+            _fullName = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanAddStudent));
+        }
     }
 
     public string StudentId
     {
         get => _studentId;
-        set { _studentId = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanAddStudent)); }
+        set
+        {
+            _studentId = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanAddStudent));
+        }
     }
 
     public string Math
     {
         get => _math;
-        set { _math = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanAddStudent)); }
+        set
+        {
+            _math = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanAddStudent));
+        }
     }
 
     public string Literature
     {
         get => _literature;
-        set { _literature = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanAddStudent)); }
+        set
+        {
+            _literature = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanAddStudent));
+        }
     }
 
     public string English
     {
         get => _english;
-        set { _english = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CanAddStudent)); }
+        set
+        {
+            _english = value;
+            NotifyOfPropertyChange();
+            NotifyOfPropertyChange(nameof(CanAddStudent));
+        }
     }
 
     public string Status
     {
         get => _status;
-        set { _status = value; NotifyOfPropertyChange(); }
+        set
+        {
+            _status = value;
+            NotifyOfPropertyChange();
+        }
     }
 
     public bool IsBusy
@@ -72,10 +101,15 @@ public sealed class StudentEntryViewModel : Screen
             NotifyOfPropertyChange();
             NotifyOfPropertyChange(nameof(CanAddStudent));
             NotifyOfPropertyChange(nameof(CanGetResults));
+            NotifyOfPropertyChange(nameof(AreInputsEnabled));
+            NotifyOfPropertyChange(nameof(IsStudentIdFilterEnabled));
         }
     }
 
-    /// <summary>Bound to the "Get All" RadioButton.</summary>
+    public bool AreInputsEnabled => !IsBusy && _service.IsConnected && _service.IsDbConnected;
+
+    public bool IsStudentIdFilterEnabled => AreInputsEnabled && IsGetByIdSelected;
+
     public bool IsGetAllSelected
     {
         get => _isGetAllSelected;
@@ -83,13 +117,12 @@ public sealed class StudentEntryViewModel : Screen
         {
             _isGetAllSelected = value;
             NotifyOfPropertyChange();
-            // Keep IsGetByIdSelected in sync (opposite of IsGetAllSelected).
             NotifyOfPropertyChange(nameof(IsGetByIdSelected));
             NotifyOfPropertyChange(nameof(CanGetResults));
+            NotifyOfPropertyChange(nameof(IsStudentIdFilterEnabled));
         }
     }
 
-    /// <summary>Bound to the "Get By ID" RadioButton; computed as the inverse of IsGetAllSelected.</summary>
     public bool IsGetByIdSelected
     {
         get => !_isGetAllSelected;
@@ -99,10 +132,10 @@ public sealed class StudentEntryViewModel : Screen
             NotifyOfPropertyChange();
             NotifyOfPropertyChange(nameof(IsGetAllSelected));
             NotifyOfPropertyChange(nameof(CanGetResults));
+            NotifyOfPropertyChange(nameof(IsStudentIdFilterEnabled));
         }
     }
 
-    /// <summary>Student ID filter used when IsGetByIdSelected is true.</summary>
     public string? StudentIdFilter
     {
         get => _studentIdFilter;
@@ -114,11 +147,11 @@ public sealed class StudentEntryViewModel : Screen
         }
     }
 
-    // Bound to the DataGrid in StudentEntryView.
     public ObservableCollection<StudentResultDto> Results { get; } = [];
 
     public bool CanAddStudent
         => !IsBusy
+        && _service.IsConnected
         && _service.IsDbConnected
         && !string.IsNullOrWhiteSpace(FullName)
         && !string.IsNullOrWhiteSpace(StudentId)
@@ -128,22 +161,22 @@ public sealed class StudentEntryViewModel : Screen
 
     public bool CanGetResults
         => !IsBusy
+        && _service.IsConnected
         && _service.IsDbConnected
-        // When "Get By ID" is selected, a non-empty filter is required.
         && (_isGetAllSelected || !string.IsNullOrWhiteSpace(_studentIdFilter));
 
     public async Task AddStudent()
     {
         if (!TryParseScore(Math, out double math)
-         || !TryParseScore(Literature, out double lit)
-         || !TryParseScore(English, out double eng))
+            || !TryParseScore(Literature, out double literature)
+            || !TryParseScore(English, out double english))
         {
-            Status = "Scores must be numbers between 0 and 10.";
+            Status = "Điểm phải là số trong khoảng từ 0 đến 10.";
             return;
         }
 
         IsBusy = true;
-        Status = $"Adding student {StudentId}...";
+        Status = $"Đang lưu sinh viên {StudentId}...";
 
         try
         {
@@ -151,21 +184,24 @@ public sealed class StudentEntryViewModel : Screen
                 FullName: FullName,
                 StudentId: StudentId,
                 Math: math,
-                Literature: lit,
-                English: eng);
+                Literature: literature,
+                English: english);
 
             var response = await _service.SendStudentAddAsync(request);
 
-            Status = response.Success
-                ? $"Student {StudentId} added successfully."
-                : $"Failed: {response.ErrorMessage}";
-
             if (response.Success)
+            {
+                Status = $"Đã lưu sinh viên {StudentId} thành công.";
                 ClearInputs();
+            }
+            else
+            {
+                Status = $"Không thể lưu sinh viên: {response.ErrorMessage}";
+            }
         }
         catch (Exception ex)
         {
-            Status = $"Error: {ex.Message}";
+            Status = $"Có lỗi khi lưu sinh viên: {ex.Message}";
         }
         finally
         {
@@ -175,13 +211,12 @@ public sealed class StudentEntryViewModel : Screen
 
     public async Task GetResults()
     {
-        // Build the request according to the selected query mode.
         var request = _isGetAllSelected
             ? new ResultsGetRequest(ResultsMode.All, null)
             : new ResultsGetRequest(ResultsMode.ById, StudentIdFilter);
 
         IsBusy = true;
-        Status = "Fetching results...";
+        Status = "Đang tải dữ liệu từ máy chủ...";
 
         try
         {
@@ -189,17 +224,38 @@ public sealed class StudentEntryViewModel : Screen
 
             Results.Clear();
             foreach (var row in rows)
+            {
                 Results.Add(row);
+            }
 
-            Status = $"{Results.Count} record(s) loaded.";
+            Status = Results.Count == 0
+                ? "Không tìm thấy dữ liệu phù hợp."
+                : $"Đã tải {Results.Count} bản ghi.";
         }
         catch (Exception ex)
         {
-            Status = $"Error: {ex.Message}";
+            Status = $"Không thể tải dữ liệu: {ex.Message}";
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private void OnServiceStateChanged(object? sender, EventArgs e)
+    {
+        NotifyOfPropertyChange(nameof(CanAddStudent));
+        NotifyOfPropertyChange(nameof(CanGetResults));
+        NotifyOfPropertyChange(nameof(AreInputsEnabled));
+        NotifyOfPropertyChange(nameof(IsStudentIdFilterEnabled));
+
+        if (!_service.IsConnected)
+        {
+            Status = "Mất kết nối tới máy chủ. Vui lòng kết nối lại.";
+        }
+        else if (!_service.IsDbConnected)
+        {
+            Status = "Chưa có kết nối cơ sở dữ liệu hoạt động.";
         }
     }
 
@@ -212,16 +268,17 @@ public sealed class StudentEntryViewModel : Screen
         English = string.Empty;
     }
 
-    // Returns false when the value is empty, non-numeric, or outside [0, 10].
     private static bool TryParseScore(string raw, out double value)
     {
-        if (double.TryParse(raw,
+        if (double.TryParse(
+                raw,
                 System.Globalization.NumberStyles.Any,
                 System.Globalization.CultureInfo.InvariantCulture,
                 out value))
         {
             return value is >= 0.0 and <= 10.0;
         }
+
         value = 0;
         return false;
     }

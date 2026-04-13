@@ -10,6 +10,7 @@ public sealed record DbConnectRequest(
     public bool IsValid()
         => !string.IsNullOrWhiteSpace(SqlHost)
         && !string.IsNullOrWhiteSpace(Username)
+        && !string.IsNullOrWhiteSpace(Password)
         && !string.IsNullOrWhiteSpace(Database)
         && SqlPort is > 0 and <= 65535;
 }
