@@ -6,19 +6,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Hệ thống quản lý sinh viên Socket"
     Width="1040"
-    Height="760"
-    MinWidth="920"
-    MinHeight="680"
+    Height="800"
+    MinWidth="1040"
+    MinHeight="800"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
 
-    <Border
-        Margin="24"
-        Padding="28"
-        Background="{StaticResource PanelBackgroundBrush}"
-        BorderBrush="{StaticResource BorderBrushSoft}"
-        BorderThickness="1"
-        CornerRadius="24">
+    <Grid Margin="24">
         <ContentControl x:Name="ActiveItem" />
-    </Border>
+    </Grid>
 </Window>

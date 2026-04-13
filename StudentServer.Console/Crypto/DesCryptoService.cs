@@ -57,8 +57,10 @@ internal sealed class DesCryptoService
         string result = DecryptToString(EncryptString(probe));
 
         if (result != probe)
-            throw new InvalidOperationException(
-                $"DES self-test failed: expected \"{probe}\" but got \"{result}\".");
+        {
+            throw new InvalidOperationException($"DES self-test failed: expected \"{probe}\" but got \"{result}\".");
+        }
+
     }
 
     // A new DES instance is created per operation; ICryptoTransform is single-use.

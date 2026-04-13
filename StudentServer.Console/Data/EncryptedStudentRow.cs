@@ -4,10 +4,7 @@ namespace StudentServer.Console.Data;
 internal sealed class EncryptedStudentRow
 {
     public int Id { get; init; }
-
-    // StudentId is stored in plain text so UPSERT can locate rows without decrypting.
     public required string StudentId { get; init; }
-
     public required byte[] FullNameEnc { get; init; }
     public required byte[] MathEnc { get; init; }
     public required byte[] LiteratureEnc { get; init; }

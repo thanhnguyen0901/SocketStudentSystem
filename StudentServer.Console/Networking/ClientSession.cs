@@ -234,7 +234,7 @@ internal sealed class ClientSession
             {
                 rows = await StudentRepository.GetAllAsync(_db, ct);
             }
-            else // BY_ID
+            else
             {
                 var single = await StudentRepository.GetByStudentIdAsync(_db, req.StudentId!, ct);
                 rows = single is null ? [] : [single];

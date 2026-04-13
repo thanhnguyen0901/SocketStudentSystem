@@ -3,8 +3,6 @@ using System.Text.Json;
 
 namespace StudentServer.Console.Networking;
 
-// First-pass deserialization target: Type is read before the payload is re-deserialized
-// to the correct strongly-typed DTO.
 internal sealed class RawEnvelope
 {
     public MessageType Type { get; set; }

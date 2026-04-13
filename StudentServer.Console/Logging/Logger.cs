@@ -64,7 +64,10 @@ public static class Logger
         string? reqId,
         Exception? ex)
     {
-        if (level < _minLevel) return;
+        if (level < _minLevel)
+        {
+            return;
+        }
 
         var sb = new StringBuilder(128);
         sb.Append($"[{DateTimeOffset.Now:HH:mm:ss.fff}]");
@@ -107,6 +110,7 @@ public static class Logger
         {
             return parsed;
         }
+
         return LogLevel.INFO;
     }
 }

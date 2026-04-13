@@ -69,5 +69,3 @@ finally
 
     Logger.Info("Server", "Server stopped.");
 }
-
-

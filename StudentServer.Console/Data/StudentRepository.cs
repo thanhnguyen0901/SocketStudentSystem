@@ -66,7 +66,9 @@ internal static class StudentRepository
 
         var rows = new List<EncryptedStudentRow>();
         while (await reader.ReadAsync(ct))
+        {
             rows.Add(MapRow(reader));
+        }
 
         return rows;
     }

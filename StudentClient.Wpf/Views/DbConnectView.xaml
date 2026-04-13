@@ -8,7 +8,7 @@
     d:DesignWidth="920"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -34,7 +34,7 @@
                 Background="White"
                 BorderBrush="{StaticResource BorderBrushSoft}"
                 BorderThickness="1"
-                CornerRadius="20">
+                CornerRadius="10">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.2*" />
@@ -53,7 +53,10 @@
                             Foreground="{StaticResource TextMutedBrush}"
                             Text="Điền host, cổng và tên database mà server sẽ sử dụng." />
 
-                        <TextBlock FontSize="13" FontWeight="SemiBold" Text="Địa chỉ SQL Server" />
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="Địa chỉ SQL Server" />
                         <TextBox
                             x:Name="SqlHost"
                             Margin="0,8,0,14"
@@ -67,7 +70,10 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock FontSize="13" FontWeight="SemiBold" Text="Cổng" />
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Text="Cổng" />
                                 <TextBox
                                     x:Name="SqlPort"
                                     Margin="0,8,0,0"
@@ -75,7 +81,10 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
-                                <TextBlock FontSize="13" FontWeight="SemiBold" Text="Tên cơ sở dữ liệu" />
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Text="Tên cơ sở dữ liệu" />
                                 <TextBox
                                     x:Name="Database"
                                     Margin="0,8,0,0"
@@ -102,13 +111,19 @@
                                 Foreground="{StaticResource TextMutedBrush}"
                                 Text="Sử dụng tài khoản có quyền truy cập vào database đã tạo." />
 
-                            <TextBlock FontSize="13" FontWeight="SemiBold" Text="Tên đăng nhập" />
+                            <TextBlock
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Text="Tên đăng nhập" />
                             <TextBox
                                 x:Name="Username"
                                 Margin="0,8,0,14"
                                 IsEnabled="{Binding AreInputsEnabled}" />
 
-                            <TextBlock FontSize="13" FontWeight="SemiBold" Text="Mật khẩu" />
+                            <TextBlock
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Text="Mật khẩu" />
                             <PasswordBox
                                 x:Name="PasswordBox"
                                 Margin="0,8,0,0"

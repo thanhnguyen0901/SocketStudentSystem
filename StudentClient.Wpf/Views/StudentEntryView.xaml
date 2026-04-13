@@ -8,267 +8,283 @@
     d:DesignWidth="920"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="0,0,0,8">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+    <Grid Margin="0,0,0,8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Margin="0,0,0,20">
-                <TextBlock
-                    FontSize="24"
-                    FontWeight="SemiBold"
-                    Text="Dữ liệu sinh viên" />
-            </StackPanel>
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock
+                FontSize="24"
+                FontWeight="SemiBold"
+                Text="Dữ liệu sinh viên" />
+        </StackPanel>
 
-            <Grid Grid.Row="1" Margin="0,0,0,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.45*" />
-                    <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="1*" />
-                </Grid.ColumnDefinitions>
-
-                <Border
-                    Grid.Column="0"
-                    Padding="22"
-                    Background="White"
-                    BorderBrush="{StaticResource BorderBrushSoft}"
-                    BorderThickness="1"
-                    CornerRadius="20">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="18" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="14" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Row="0">
-                            <TextBlock
-                                FontSize="18"
-                                FontWeight="SemiBold"
-                                Text="Nhập thông tin sinh viên" />
-                            <TextBlock
-                                Margin="0,6,0,0"
-                                FontSize="13"
-                                Foreground="{StaticResource TextMutedBrush}"
-                                Text="Điền đầy đủ mã sinh viên, họ tên và ba môn học trước khi lưu." />
-                        </StackPanel>
-
-                        <Grid Grid.Row="2">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="14" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <Grid Grid.Row="0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="18" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock FontSize="13" FontWeight="SemiBold" Text="Mã sinh viên" />
-                                    <TextBox
-                                        x:Name="StudentId"
-                                        Margin="0,8,0,0"
-                                        IsEnabled="{Binding AreInputsEnabled}" />
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock FontSize="13" FontWeight="SemiBold" Text="Họ và tên" />
-                                    <TextBox
-                                        x:Name="FullName"
-                                        Margin="0,8,0,0"
-                                        IsEnabled="{Binding AreInputsEnabled}" />
-                                </StackPanel>
-                            </Grid>
-
-                            <Grid Grid.Row="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="18" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="18" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock FontSize="13" FontWeight="SemiBold" Text="Điểm Toán" />
-                                    <TextBox
-                                        x:Name="Math"
-                                        Margin="0,8,0,0"
-                                        IsEnabled="{Binding AreInputsEnabled}" />
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock FontSize="13" FontWeight="SemiBold" Text="Điểm Ngữ văn" />
-                                    <TextBox
-                                        x:Name="Literature"
-                                        Margin="0,8,0,0"
-                                        IsEnabled="{Binding AreInputsEnabled}" />
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="4">
-                                    <TextBlock FontSize="13" FontWeight="SemiBold" Text="Điểm Tiếng Anh" />
-                                    <TextBox
-                                        x:Name="English"
-                                        Margin="0,8,0,0"
-                                        IsEnabled="{Binding AreInputsEnabled}" />
-                                </StackPanel>
-                            </Grid>
-                        </Grid>
-
-                        <Button
-                            x:Name="AddStudent"
-                            Grid.Row="4"
-                            Width="180"
-                            HorizontalAlignment="Left"
-                            Content="Lưu sinh viên" />
-                    </Grid>
-                </Border>
-
-                <Border
-                    Grid.Column="2"
-                    Padding="22"
-                    Background="{StaticResource PanelAltBackgroundBrush}"
-                    BorderBrush="{StaticResource BorderBrushSoft}"
-                    BorderThickness="1"
-                    CornerRadius="20">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="16" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="16" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="16" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Row="0">
-                            <TextBlock
-                                FontSize="18"
-                                FontWeight="SemiBold"
-                                Text="Tra cứu dữ liệu" />
-                            <TextBlock
-                                Margin="0,6,0,0"
-                                FontSize="13"
-                                Foreground="{StaticResource TextMutedBrush}"
-                                Text="Chọn kiểu truy vấn phù hợp rồi tải dữ liệu đã giải mã từ server." />
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="2">
-                            <RadioButton
-                                x:Name="IsGetAllSelected"
-                                Content="Lấy toàn bộ sinh viên"
-                                IsChecked="{Binding IsGetAllSelected, Mode=TwoWay}" />
-                            <RadioButton
-                                x:Name="IsGetByIdSelected"
-                                Margin="0,12,0,0"
-                                Content="Tìm theo mã sinh viên"
-                                IsChecked="{Binding IsGetByIdSelected, Mode=TwoWay}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="4">
-                            <TextBlock FontSize="13" FontWeight="SemiBold" Text="Mã sinh viên cần tra cứu" />
-                            <TextBox
-                                x:Name="StudentIdFilter"
-                                Margin="0,8,0,0"
-                                IsEnabled="{Binding IsStudentIdFilterEnabled}"
-                                ToolTip="Nhập mã sinh viên để tra cứu" />
-                        </StackPanel>
-
-                        <Button
-                            x:Name="GetResults"
-                            Grid.Row="6"
-                            Width="180"
-                            HorizontalAlignment="Left"
-                            Content="Tải dữ liệu" />
-                    </Grid>
-                </Border>
-            </Grid>
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.45*" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
 
             <Border
-                Grid.Row="2"
-                Margin="0,0,0,20"
-                Padding="14"
-                Background="{StaticResource SuccessBrush}"
-                CornerRadius="12">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource SuccessTextBrush}"
-                        Text="TRẠNG THÁI XỬ LÝ" />
-                    <TextBlock
-                        x:Name="Status"
-                        Margin="0,6,0,0"
-                        FontSize="14"
-                        Foreground="{StaticResource TextPrimaryBrush}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-            </Border>
-
-            <Border
-                Grid.Row="3"
-                Padding="18"
+                Grid.Column="0"
+                Padding="22"
                 Background="White"
                 BorderBrush="{StaticResource BorderBrushSoft}"
                 BorderThickness="1"
-                CornerRadius="20">
+                CornerRadius="10">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="18" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="14" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0">
                         <TextBlock
                             FontSize="18"
                             FontWeight="SemiBold"
-                            Text="Kết quả hiển thị" />
+                            Text="Nhập thông tin sinh viên" />
                         <TextBlock
                             Margin="0,6,0,0"
                             FontSize="13"
                             Foreground="{StaticResource TextMutedBrush}"
-                            Text="Dữ liệu dưới đây là thông tin sau khi server giải mã và tính điểm trung bình." />
+                            Text="Điền đầy đủ mã sinh viên, họ tên và ba môn học trước khi lưu." />
                     </StackPanel>
 
-                    <DataGrid
-                        x:Name="Results"
-                        Grid.Row="2"
-                        Height="280"
-                        MinHeight="240"
-                        AlternatingRowBackground="#F7FAFD"
-                        AutoGenerateColumns="False"
-                        CanUserAddRows="False"
-                        GridLinesVisibility="Horizontal"
-                        IsReadOnly="True">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn
-                                Width="180"
-                                Binding="{Binding StudentId}"
-                                Header="Mã sinh viên" />
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding FullName}"
-                                Header="Họ và tên" />
-                            <DataGridTextColumn
-                                Width="160"
-                                Binding="{Binding Average, StringFormat=F2}"
-                                Header="Điểm trung bình" />
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="14" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Text="Mã sinh viên" />
+                                <TextBox
+                                    x:Name="StudentId"
+                                    Margin="0,8,0,0"
+                                    IsEnabled="{Binding AreInputsEnabled}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Text="Họ và tên" />
+                                <TextBox
+                                    x:Name="FullName"
+                                    Margin="0,8,0,0"
+                                    IsEnabled="{Binding AreInputsEnabled}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Text="Điểm Toán" />
+                                <TextBox
+                                    x:Name="Math"
+                                    Margin="0,8,0,0"
+                                    IsEnabled="{Binding AreInputsEnabled}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Text="Điểm Ngữ văn" />
+                                <TextBox
+                                    x:Name="Literature"
+                                    Margin="0,8,0,0"
+                                    IsEnabled="{Binding AreInputsEnabled}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="4">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Text="Điểm Tiếng Anh" />
+                                <TextBox
+                                    x:Name="English"
+                                    Margin="0,8,0,0"
+                                    IsEnabled="{Binding AreInputsEnabled}" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+
+                    <Button
+                        x:Name="AddStudent"
+                        Grid.Row="4"
+                        Width="180"
+                        HorizontalAlignment="Left"
+                        Content="Lưu sinh viên" />
+                </Grid>
+            </Border>
+
+            <Border
+                Grid.Column="2"
+                Padding="22"
+                Background="{StaticResource PanelAltBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrushSoft}"
+                BorderThickness="1"
+                CornerRadius="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="16" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="16" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="16" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Text="Tra cứu dữ liệu" />
+                        <TextBlock
+                            Margin="0,6,0,0"
+                            FontSize="13"
+                            Foreground="{StaticResource TextMutedBrush}"
+                            Text="Chọn kiểu truy vấn phù hợp rồi tải dữ liệu đã giải mã từ server." />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2">
+                        <RadioButton
+                            x:Name="IsGetAllSelected"
+                            Content="Lấy toàn bộ sinh viên"
+                            IsChecked="{Binding IsGetAllSelected, Mode=TwoWay}" />
+                        <RadioButton
+                            x:Name="IsGetByIdSelected"
+                            Margin="0,12,0,0"
+                            Content="Tìm theo mã sinh viên"
+                            IsChecked="{Binding IsGetByIdSelected, Mode=TwoWay}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4">
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="Mã sinh viên cần tra cứu" />
+                        <TextBox
+                            x:Name="StudentIdFilter"
+                            Margin="0,8,0,0"
+                            IsEnabled="{Binding IsStudentIdFilterEnabled}"
+                            ToolTip="Nhập mã sinh viên để tra cứu" />
+                    </StackPanel>
+
+                    <Button
+                        x:Name="GetResults"
+                        Grid.Row="6"
+                        Width="180"
+                        HorizontalAlignment="Left"
+                        Content="Tải dữ liệu" />
                 </Grid>
             </Border>
         </Grid>
-    </ScrollViewer>
+
+        <Border
+            Grid.Row="2"
+            Margin="0,0,0,20"
+            Padding="14"
+            Background="{StaticResource SuccessBrush}"
+            CornerRadius="12">
+            <StackPanel>
+                <TextBlock
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Foreground="{StaticResource SuccessTextBrush}"
+                    Text="TRẠNG THÁI XỬ LÝ" />
+                <TextBlock
+                    x:Name="Status"
+                    Margin="0,6,0,0"
+                    FontSize="14"
+                    Foreground="{StaticResource TextPrimaryBrush}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <Border
+            Grid.Row="3"
+            MinHeight="0"
+            Padding="18"
+            Background="White"
+            BorderBrush="{StaticResource BorderBrushSoft}"
+            BorderThickness="1"
+            CornerRadius="10">
+            <Grid MinHeight="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="14" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0">
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="Kết quả hiển thị" />
+                    <TextBlock
+                        Margin="0,6,0,0"
+                        FontSize="13"
+                        Foreground="{StaticResource TextMutedBrush}"
+                        Text="Dữ liệu dưới đây là thông tin sau khi server giải mã và tính điểm trung bình." />
+                </StackPanel>
+
+                <DataGrid
+                    x:Name="Results"
+                    Grid.Row="2"
+                    MinHeight="0"
+                    AlternatingRowBackground="#F7FAFD"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    GridLinesVisibility="Horizontal"
+                    IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="180"
+                            Binding="{Binding StudentId}"
+                            Header="Mã sinh viên" />
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding FullName}"
+                            Header="Họ và tên" />
+                        <DataGridTextColumn
+                            Width="160"
+                            Binding="{Binding Average, StringFormat=F2}"
+                            Header="Điểm trung bình" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>
